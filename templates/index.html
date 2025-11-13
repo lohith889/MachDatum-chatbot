@@ -1,0 +1,587 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MachDatum Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .chat-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 2.5rem;
+        }
+
+        .online-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .messages-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #dbeafe 0%, #f3f4f6 50%, #f3e8ff 100%);
+        }
+
+        .bg-blobs {
+            position: absolute;
+            inset: 0;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: blob 20s ease-in-out infinite;
+        }
+
+        .blob-1 {
+            top: 5rem;
+            left: 5rem;
+            width: 18rem;
+            height: 18rem;
+            background: #bfdbfe;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            top: 10rem;
+            right: 5rem;
+            width: 18rem;
+            height: 18rem;
+            background: #ddd6fe;
+            animation-delay: 2s;
+        }
+
+        .blob-3 {
+            bottom: 5rem;
+            left: 50%;
+            width: 18rem;
+            height: 18rem;
+            background: #fbcfe8;
+            animation-delay: 4s;
+        }
+
+        @keyframes blob {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+
+        .messages-container {
+            position: relative;
+            z-index: 10;
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user .avatar img {
+            transform: scale(1.5);
+        }
+
+        .bot .avatar img {
+            transform: scale(1.1);
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+        }
+
+        .user .message-content {
+            align-items: flex-end;
+        }
+
+        .bot .message-content {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            border-radius: 1rem;
+            padding: 0.75rem 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .user .message-bubble {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+        }
+
+        .bot .message-bubble {
+            background: white;
+            border: 1px solid #f3f4f6;
+            color: #1f2937;
+        }
+
+        .bot .message-bubble p {
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .bot .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bot .message-bubble strong {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .bot .message-bubble ul, .bot .message-bubble ol {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .bot .message-bubble li {
+            margin: 0.25rem 0;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            --color: #9ca3af;
+            --animation: 2s ease-in-out infinite;
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f3f4f6;
+        }
+
+        .loader .circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 12px;
+            height: 12px;
+            border: solid 2px var(--color);
+            border-radius: 50%;
+            margin: 0 4px;
+            background-color: transparent;
+            animation: circle-keys var(--animation);
+        }
+
+        .loader .circle .dot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color);
+            animation: dot-keys var(--animation);
+        }
+
+        .loader .circle .outline {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: outline-keys var(--animation);
+        }
+
+        .circle:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .circle:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .circle:nth-child(4) {
+            animation-delay: 0.9s;
+        }
+
+        .circle:nth-child(2) .dot {
+            animation-delay: 0.3s;
+        }
+
+        .circle:nth-child(3) .dot {
+            animation-delay: 0.6s;
+        }
+
+        .circle:nth-child(4) .dot {
+            animation-delay: 0.9s;
+        }
+
+        .circle:nth-child(1) .outline {
+            animation-delay: 0.9s;
+        }
+
+        .circle:nth-child(2) .outline {
+            animation-delay: 1.2s;
+        }
+
+        .circle:nth-child(3) .outline {
+            animation-delay: 1.5s;
+        }
+
+        .circle:nth-child(4) .outline {
+            animation-delay: 1.8s;
+        }
+
+        @keyframes circle-keys {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes dot-keys {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes outline-keys {
+            0% {
+                transform: scale(0);
+                outline: solid 12px var(--color);
+                outline-offset: 0;
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                outline: solid 0 transparent;
+                outline-offset: 12px;
+                opacity: 0;
+            }
+        }
+
+        .input-wrapper {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.875rem 1.25rem;
+            border: 2px solid #d1d5db;
+            border-radius: 1rem;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            outline: none;
+            overflow-y: auto;
+            max-height: 120px;
+        }
+        
+        .message-input::-webkit-scrollbar {
+            display: none;
+        }
+
+        .message-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .send-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            background-color: #006aff;
+            border: 6px solid #c0dfff;
+            color: white;
+            gap: 8px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .send-button .text {
+            font-size: 1.2em;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .send-button .svg {
+            padding-top: 3px;
+            height: 100%;
+            width: fit-content;
+        }
+
+        .send-button .svg svg {
+            width: 38px;
+            height: 20px;
+        }
+
+        .send-button:hover:not(:disabled) {
+            border: 6px solid #b1d8ff;
+            background-color: #1b7aff;
+        }
+
+        .send-button:active:not(:disabled) {
+            border: 5px solid #c0dfff;
+        }
+
+        .send-button:hover:not(:disabled) .svg svg {
+            animation: jello-vertical 0.9s both;
+            transform-origin: left;
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #94a3b8;
+            border-color: #cbd5e1;
+        }
+
+        @keyframes jello-vertical {
+            0% {
+                transform: scale3d(1, 1, 1);
+            }
+            30% {
+                transform: scale3d(0.75, 1.25, 1);
+            }
+            40% {
+                transform: scale3d(1.25, 0.75, 1);
+            }
+            50% {
+                transform: scale3d(0.85, 1.15, 1);
+            }
+            65% {
+                transform: scale3d(1.05, 0.95, 1);
+            }
+            75% {
+                transform: scale3d(0.95, 1.05, 1);
+            }
+            100% {
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-bottom: 0.75rem;
+        }
+
+        .messages-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-content">
+                <img src="/static/images/logo.png" alt="MachDatum Logo" class="logo">
+                <div class="online-status">
+                    <div class="status-dot"></div>
+                    <span class="status-text">Online</span>
+                </div>
+            </div>
+        </div>
+        <div class="messages-wrapper" id="messagesWrapper">
+            <div class="bg-blobs">
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
+            </div>
+            <div class="messages-container">
+                <div class="messages-list" id="messagesList">
+                    <div class="message bot">
+                        <div class="avatar">
+                            <img src="/static/images/bot.png" alt="Bot">
+                        </div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                <p>Hi! I'm the MachDatum assistant. How can I help you today?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="typing-indicator hidden" id="typingIndicator">
+                    <div class="avatar">
+                        <img src="/static/images/bot.png" alt="Bot">
+                    </div>
+                    <div class="loader">
+                        <div class="circle">
+                            <div class="dot"></div>
+                            <div class="outline"></div>
+                        </div>
+                        <div class="circle">
+                            <div class="dot"></div>
+                            <div class="outline"></div>
+                        </div>
+                        <div class="circle">
+                            <div class="dot"></div>
+                            <div class="outline"></div>
+                        </div>
+                        <div class="circle">
+                            <div class="dot"></div>
+                            <div class="outline"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="input-wrapper">
+            <div class="input-container">
+                <textarea id="messageInput" class="message-input" placeholder="Type your message..." rows="1"></textarea>
+                <button id="sendButton" class="send-button" disabled>
+                    <span class="text">Send</span>
+                    <span class="svg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="20" viewBox="0 0 38 15" fill="none">
+                            <path fill="white" d="M10 7.519l-.939-.344h0l.939.344zm14.386-1.205l-.981-.192.981.192zm1.276 5.509l.537.843.148-.094.107-.139-.792-.611zm4.819-4.304l-.385-.923h0l.385.923zm7.227.707a1 1 0 0 0 0-1.414L31.343.448a1 1 0 0 0-1.414 0 1 1 0 0 0 0 1.414l5.657 5.657-5.657 5.657a1 1 0 0 0 1.414 1.414l6.364-6.364zM1 7.519l.554.833.029-.019.094-.061.361-.23 1.277-.77c1.054-.609 2.397-1.32 3.629-1.787.617-.234 1.17-.392 1.623-.455.477-.066.707-.008.788.034.025.013.031.021.039.034a.56.56 0 0 1 .058.235c.029.327-.047.906-.39 1.842l1.878.689c.383-1.044.571-1.949.505-2.705-.072-.815-.45-1.493-1.16-1.865-.627-.329-1.358-.332-1.993-.244-.659.092-1.367.305-2.056.566-1.381.523-2.833 1.297-3.921 1.925l-1.341.808-.385.245-.104.068-.028.018c-.011.007-.011.007.543.84zm8.061-.344c-.198.54-.328 1.038-.36 1.484-.032.441.024.94.325 1.364.319.45.786.64 1.21.697.403.054.824-.001 1.21-.09.775-.179 1.694-.566 2.633-1.014l3.023-1.554c2.115-1.122 4.107-2.168 5.476-2.524.329-.086.573-.117.742-.115s.195.038.161.014c-.15-.105.085-.139-.076.685l1.963.384c.192-.98.152-2.083-.74-2.707-.405-.283-.868-.37-1.28-.376s-.849.069-1.274.179c-1.65.43-3.888 1.621-5.909 2.693l-2.948 1.517c-.92.439-1.673.743-2.221.87-.276.064-.429.065-.492.057-.043-.006.066.003.155.127.07.099.024.131.038-.063.014-.187.078-.49.243-.94l-1.878-.689zm14.343-1.053c-.361 1.844-.474 3.185-.413 4.161.059.95.294 1.72.811 2.215.567.544 1.242.546 1.664.459a2.34 2.34 0 0 0 .502-.167l.15-.076.049-.028.018-.011c.013-.008.013-.008-.524-.852l-.536-.844.019-.012c-.038.018-.064.027-.084.032-.037.008.053-.013.125.056.021.02-.151-.135-.198-.895-.046-.734.034-1.887.38-3.652l-1.963-.384zm2.257 5.701l.791.611.024-.031.08-.101.311-.377 1.093-1.213c.922-.954 2.005-1.894 2.904-2.27l-.771-1.846c-1.31.547-2.637 1.758-3.572 2.725l-1.184 1.314-.341.414-.093.117-.025.032c-.01.013-.01.013.781.624zm5.204-3.381c.989-.413 1.791-.42 2.697-.307.871.108 2.083.385 3.437.385v-2c-1.197 0-2.041-.226-3.19-.369-1.114-.139-2.297-.146-3.715.447l.771 1.846z"></path>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+            <p class="footer-text">Powered by MachDatum AI  •  <a href="https://www.machdatum.com" target="_blank" rel="noopener noreferrer">www.machdatum.com</a></p>
+        </div>
+    </div>
+    <script>
+const messagesList=document.getElementById('messagesList');const messagesWrapper=document.getElementById('messagesWrapper');const messageInput=document.getElementById('messageInput');const sendButton=document.getElementById('sendButton');const typingIndicator=document.getElementById('typingIndicator');const userAvatarSrc="/static/images/user.png";const botAvatarSrc="/static/images/bot.png";function scrollToBottom(){setTimeout(()=>{messagesWrapper.scrollTop=messagesWrapper.scrollHeight},10)}function formatBotMessage(text){text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');let paragraphs=text.split('\n\n');let formatted='';for(let para of paragraphs){para=para.trim();if(!para)continue;if(para.includes('\n- ')||para.includes('\n* ')){let lines=para.split('\n');formatted+='<ul>';for(let line of lines){line=line.trim();if(line.startsWith('- ')||line.startsWith('* ')){formatted+='<li>'+line.substring(2)+'</li>'}}formatted+='</ul>'}else if(para.includes('\n1. ')||para.includes('\n2. ')){let lines=para.split('\n');formatted+='<ol>';for(let line of lines){line=line.trim();if(/^\d+\.\s/.test(line)){formatted+='<li>'+line.replace(/^\d+\.\s/,'')+'</li>'}}formatted+='</ol>'}else{formatted+='<p>'+para+'</p>'}}return formatted}function addMessage(text,sender){const messageDiv=document.createElement('div');messageDiv.className='message '+sender;const avatarSrc=sender==='user'?userAvatarSrc:botAvatarSrc;const formattedText=sender==='bot'?formatBotMessage(text):'<p>'+text+'</p>';messageDiv.innerHTML='<div class="avatar"><img src="'+avatarSrc+'" alt="'+sender+'"></div><div class="message-content"><div class="message-bubble">'+formattedText+'</div></div>';messagesList.appendChild(messageDiv)}function setTyping(isTyping){if(isTyping){typingIndicator.classList.remove('hidden')}else{typingIndicator.classList.add('hidden')}}async function sendMessage(){const message=messageInput.value.trim();if(!message)return;addMessage(message,'user');scrollToBottom();messageInput.value='';messageInput.style.height='auto';sendButton.disabled=true;setTyping(true);try{const response=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:message})});const data=await response.json();setTyping(false);if(data.status==='success'){addMessage(data.response,'bot')}else{addMessage('Sorry, I encountered an error. Please try again.','bot')}}catch(error){setTyping(false);addMessage('Sorry, I could not connect to the server. Please try again.','bot');console.error('Error:',error)}}sendButton.addEventListener('click',sendMessage);messageInput.addEventListener('input',()=>{sendButton.disabled=!messageInput.value.trim()});messageInput.addEventListener('keypress',(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});messageInput.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'});
+    </script>
+</body>
+</html>
