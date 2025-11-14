@@ -221,16 +221,6 @@ This project is open-source and free to use for learning or integration.
 
 ---
 
-If you want, I can also generate:
-
-⚡ A full project structure with frontend files
-⚡ A better-looking UI for the chatbot
-⚡ A Dockerfile to deploy your bot
-⚡ A professional GitHub banner + preview GIF
-
-Just expand this project however you want, da legend.
-
-
 ## 🛠️ Technology Stack
 
 **Backend:**
@@ -398,45 +388,6 @@ https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generat
 - ✅ **Blog Content** - Summaries and information from blog articles
 - ✅ **Technical Docs** - Device specifications and setup guides
 
-## 🔒 Security Best Practices
-
-⚠️ **Important Security Notes:**
-
-1. **Never commit API keys** to GitHub or version control
-2. Use environment variables for sensitive data:
-   ```python
-   import os
-   API_KEY = os.environ.get('GEMINI_API_KEY')
-   ```
-3. **Add `.gitignore`:**
-   ```
-   .venv/
-   __pycache__/
-   *.pyc
-   .env
-   config.py
-   ```
-4. **Production Deployment:**
-   - Use a production WSGI server (Gunicorn, uWSGI)
-   - Implement rate limiting
-   - Add HTTPS/SSL encryption
-   - Enable CORS properly
-   - Add user authentication if needed
-
-## 📦 Dependencies
-
-Create a `requirements.txt` file:
-
-```
-Flask==3.0.0
-requests==2.31.0
-```
-
-Install with:
-```bash
-pip install -r requirements.txt
-```
-
 ## 🐛 Troubleshooting
 
 ### Common Issues
@@ -488,20 +439,6 @@ RUN pip install -r requirements.txt
 COPY . .
 CMD ["python", "app.py"]
 ```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 👨‍💻 Author
 
