@@ -5,7 +5,7 @@ import json
 app = Flask(__name__)
 
 # Configuration - exact same as run_chatbot_ai.py
-API_KEY = "AIzaSyCQJEZ-5J6LRH1ChP5RoG6lpO2bqNz3TnY"
+API_KEY = "YOUR API KEY"
 MODEL_ID = "gemini-2.5-flash"
 ENDPOINT = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_ID}:generateContent?key={API_KEY}"
 
