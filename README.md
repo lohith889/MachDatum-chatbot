@@ -444,8 +444,8 @@ CMD ["python", "app.py"]
 
 **Lohith**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Project Link: [https://github.com/yourusername/MachDatum-chatbot](https://github.com/yourusername/MachDatum-chatbot)
+- GitHub: [@lohith889](https://github.com/lohith889)
+- Project Link: [https://github.com/lohith889/MachDatum-chatbot](https://github.com/lohith889/MachDatum-chatbot)
 
 ## 🙏 Acknowledgments
 
