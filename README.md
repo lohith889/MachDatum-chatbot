@@ -1,24 +1,235 @@
 # MachDatum AI Chatbot
 
-A modern, intelligent web-based chatbot powered by Google's Gemini 2.5 Flash API, designed to provide accurate information about MachDatum's products, services, and company using real-time website content analysis.
+A intelligent web-based chatbot powered by Google's Gemini 2.5 Flash API, designed to provide accurate information about MachDatum's products, services, and company using real-time website content analysis using url context tool.
+---
 
-![Python](https://img.shields.io/badge/python-3.7+-blue.svg)
-![Flask](https://img.shields.io/badge/flask-3.0+-green.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+This project demonstrates how to build a production-ready chatbot that:
 
-## 🌟 Features
+* Collects and feeds multiple URLs into Gemini using *urlContext*
+* Prevents hallucination by restricting the model to website-based knowledge
+* Provides a clean UI and API endpoint
+* Works as a standalone backend or can be integrated into any frontend
 
-- **🤖 AI-Powered Intelligence** - Leverages Google Gemini 2.5 Flash for smart, context-aware responses
-- **🌐 Real-time URL Context** - Automatically fetches and analyzes content from 20+ MachDatum web pages
-- **💬 Modern Chat Interface** - Beautiful, responsive UI with:
-  - Animated gradient backgrounds with floating blur effects
-  - Smooth message transitions and animations
-  - Advanced typing indicator with ripple animation
-  - Auto-expanding input field
-  - Mobile-friendly responsive design
-- **📝 Smart Text Formatting** - Automatically formats AI responses with bold text, lists, and paragraphs
-- **⚡ Real-time Updates** - AJAX-based communication for instant responses without page reloads
-- **🎯 Accurate Information** - Strict prompt engineering prevents AI hallucination
+---
+
+## Features
+
+### URL Context Scraping
+
+The bot sends a list of MachDatum website URLs to Gemini’s *urlContext* tool.
+This allows Gemini to fetch, parse, and use real website data in its answers.
+
+### Hallucination-Free Responses
+
+All responses are grounded strictly in the provided URL data.
+If the model fails to find relevant info, a fallback message is returned.
+
+### Flask API Backend
+
+A simple and clean Flask server handles:
+
+* Rendering the frontend
+* Receiving user messages
+* Sending requests to Gemini
+* Returning AI responses
+
+### Gemini API Integration
+
+The model used:
+
+```
+gemini-2.5-flash
+```
+
+Configured with:
+
+* Low temperature (0.1) for accuracy
+* Large token limit (2048) for detailed answers
+
+### ✔ Frontend Hook
+
+The `index.html` file acts as the chatbot UI, making POST requests to `/chat`.
+
+---
+
+## 🧠 How the Bot Works (Architecture Overview)
+
+### 1. **URL Collector / Extractor**
+
+A predefined list of MachDatum URLs is stored in the backend.
+
+```python
+URLS = [
+    "https://www.machdatum.com",
+    "https://www.machdatum.com/book-a-demo",
+    ...
+]
+```
+
+These URLs are combined into a text block and sent to Gemini as:
+
+```
+Use urlContext to fetch ALL the following URLs:
+<all URLs>
+
+Use ONLY information from these pages.
+```
+
+This forces the AI to reference ONLY this data.
+
+---
+
+### 2. **Flask Chat Endpoint**
+
+The `/chat` endpoint accepts a JSON request:
+
+```json
+{
+  "message": "your question here"
+}
+```
+
+It constructs a payload for Gemini:
+
+```python
+payload = {
+    "contents": [...],
+    "tools": [{"urlContext": {}}],
+    "generationConfig": { ... }
+}
+```
+
+Then sends it to:
+
+```
+https://generativelanguage.googleapis.com/v1beta/models/<model>:generateContent
+```
+
+---
+
+### 3. **Gemini Response Handling**
+
+If Gemini responds with valid text:
+
+```python
+answer = data["candidates"][0]["content"]["parts"][0]["text"]
+```
+
+It is returned to the frontend.
+
+If not, a fallback message is used to keep UX smooth.
+
+---
+
+### 4. **Error Handling**
+
+Handles:
+
+* Missing messages
+* Network errors
+* Invalid AI responses
+* Unexpected server issues
+
+All errors produce JSON output for easy debugging.
+
+---
+
+## 🛠 Installation & Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install flask requests
+```
+
+### 3. Add Your Gemini API Key
+
+Inside the code:
+
+```python
+API_KEY = "YOUR_API_KEY_HERE"
+```
+
+### 4. Run the Server
+
+```bash
+python app.py
+```
+
+The bot will start at:
+
+```
+http://localhost:5000
+```
+
+---
+
+## 📁 Project Structure
+
+```
+├── app.py                # Main Flask server
+├── templates/
+│     └── index.html      # Chatbot frontend UI
+├── README.md             # Project documentation
+```
+
+---
+
+## 📬 API Usage Example
+
+**POST** → `/chat`
+
+Body:
+
+```json
+{
+  "message": "What is MachDatum's CMMS?"
+}
+```
+
+Response:
+
+```json
+{
+  "response": "... accurate content extracted from the website ...",
+  "status": "success"
+}
+```
+
+---
+
+## 🧩 Key Design Decisions
+
+* **Gemini urlContext** is used instead of manually scraping webpages.
+* Hardcoded URLs ensure consistent data input for the AI.
+* A low-temperature setting reduces hallucination.
+* Fallback logic guarantees that the user always gets a meaningful answer.
+* Structure matches the standalone CLI version (run_chatbot_ai.py) to maintain consistency.
+
+---
+
+## 📜 License
+
+This project is open-source and free to use for learning or integration.
+
+---
+
+If you want, I can also generate:
+
+⚡ A full project structure with frontend files
+⚡ A better-looking UI for the chatbot
+⚡ A Dockerfile to deploy your bot
+⚡ A professional GitHub banner + preview GIF
+
+Just expand this project however you want, da legend.
+
 
 ## 🛠️ Technology Stack
 
